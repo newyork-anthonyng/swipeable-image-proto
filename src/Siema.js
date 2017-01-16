@@ -37,7 +37,7 @@ class Siema extends React.Component {
 
   handleNextClick() {
     this.setState({
-      currentIndex: Math.min(this.innerElements.length, this.state.currentIndex + 1)
+      currentIndex: Math.min(this.props.children.length - 1, this.state.currentIndex + 1)
     }, this.slideToCurrent);
   }
 
@@ -45,8 +45,10 @@ class Siema extends React.Component {
     let newTransformStyle;
     if (this.state.currentIndex === 0) {
       newTransformStyle = 0;
-    } else {
+    } else if (this.state.currentIndex === 1) {
       newTransformStyle = this.selectorWidth;
+    } else {
+      newTransformStyle = this.selectorWidth * 2;
     }
 
     this.slider.style.transform = `translateX(-${newTransformStyle}px)`;
@@ -55,6 +57,13 @@ class Siema extends React.Component {
   }
 
   removeTransition() {
+    if (this.state.currentIndex === 0) {
+      this.slider.style.transform = `translateX(-0px)`;
+    } else {
+      this.slider.style.transform = `translateX(-${this.selectorWidth}px)`;
+    }
+
+
     this.slider.removeEventListener('transitionend', this.removeTransition);
     this.slider.style.transition = 'none';
   }
