@@ -8,15 +8,21 @@ class Siema extends React.Component {
     this.handleNextClick = this.handleNextClick.bind(this);
     this.slideToCurrent = this.slideToCurrent.bind(this);
     this.removeTransition = this.removeTransition.bind(this);
+    this.styleChildren = this.styleChildren.bind(this);
     this.renderChildren = this.renderChildren.bind(this);
-    this.currentIndex = 0;
+    this.state = {
+      currentIndex: 0,
+    };
   }
 
   componentDidMount() {
     this.selectorWidth = this.container.getBoundingClientRect().width;
-    this.innerElements = [].slice.call(this.slider.children);
-
+    this.styleChildren();
     this.slider.style.width = `${this.selectorWidth * this.innerElements.length}px`;
+  }
+
+  styleChildren() {
+    this.innerElements = [].slice.call(this.slider.children);
     this.innerElements.forEach((element) => {
       element.style.width = `${100 / this.innerElements.length}%`;
       element.style.textAlign = 'center';
@@ -24,17 +30,25 @@ class Siema extends React.Component {
   }
 
   handlePreviousClick() {
-    this.currentIndex = Math.max(0, this.currentIndex - 1);
-    this.slideToCurrent();
+    this.setState({
+      currentIndex: Math.max(0, this.state.currentIndex - 1),
+    }, this.slideToCurrent);
   }
 
   handleNextClick() {
-    this.currentIndex = Math.min(this.innerElements.length - 1, this.currentIndex + 1);
-    this.slideToCurrent();
+    this.setState({
+      currentIndex: Math.min(this.innerElements.length, this.state.currentIndex + 1)
+    }, this.slideToCurrent);
   }
 
   slideToCurrent() {
-    const newTransformStyle = this.selectorWidth * this.currentIndex;
+    let newTransformStyle;
+    if (this.state.currentIndex === 0) {
+      newTransformStyle = 0;
+    } else {
+      newTransformStyle = this.selectorWidth;
+    }
+
     this.slider.style.transform = `translateX(-${newTransformStyle}px)`;
     this.slider.style.transition = `all 200ms ease-in-out`;
     this.slider.addEventListener('transitionend', this.removeTransition);
@@ -46,13 +60,34 @@ class Siema extends React.Component {
   }
 
   renderChildren() {
-    // only render 3 elements
-    return React.Children.map(this.props.children, (child, index) => {
-      return React.cloneElement(child, {
-        key: index,
-        style: { float: 'left' },
-      })
-    });
+    // always render 3 elements
+    if (this.state.currentIndex === 0) {
+      return React.Children.map(this.props.children, (child, index) => {
+        if (index === 0 || index === 1 || index === 2) {
+          return React.cloneElement(child, {
+            key: index,
+            style: {
+              float: 'left',
+              width: `${100 / 3}%`,
+              textAlign: 'center',
+            },
+          });
+        }
+      });
+    } else {
+      return React.Children.map(this.props.children, (child, index) => {
+        if (Math.abs(index - this.state.currentIndex) <= 1) {
+          return React.cloneElement(child, {
+            key: index,
+            style: {
+              float: 'left',
+              width: `${100 / 3}%`,
+              textAlign: 'center',
+            },
+          });
+        }
+      });
+    }
   }
 
   render() {
