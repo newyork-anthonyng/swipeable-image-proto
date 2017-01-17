@@ -12,6 +12,7 @@ class Siema extends React.Component {
     this.currentIndex = 0;
     this.containerWidth = null;
     this.visibleChildren = null;
+    this.isMoving = false;
 
     this.handlePrev = this.handlePrev.bind(this);
     this.handleNext = this.handleNext.bind(this);
@@ -30,6 +31,8 @@ class Siema extends React.Component {
 
   handlePrev() {
     if (this.currentIndex === 0) return;
+    if (this.isMoving) return;
+    this.isMoving = true;
 
     // update current index
     this.currentIndex = this.currentIndex - 1;
@@ -38,13 +41,15 @@ class Siema extends React.Component {
     const newTranslate = 0;
     this.slideFrame.style.transform = `translateX(-${newTranslate}px)`
     // add transition to styling of slideFrame
-    this.slideFrame.style.transition = 'all 400ms ease-in-out';
+    this.slideFrame.style.transition = 'all 200ms ease-in-out';
     // add event listener on transition end
     this.slideFrame.addEventListener('transitionend', this.handleTransitionEnd);
   }
 
   handleNext() {
     if (this.currentIndex === this.props.children.length - 1) return;
+    if (this.isMoving) return;
+    this.isMoving = true;
 
     // update current index
     this.currentIndex = this.currentIndex + 1;
@@ -61,12 +66,13 @@ class Siema extends React.Component {
     this.slideFrame.style.transform = `translateX(-${newTranslate}px)`;
 
     // add transition to styling of slideFrame
-    this.slideFrame.style.transition = 'all 400ms ease-in-out';
+    this.slideFrame.style.transition = 'all 200ms ease-in-out';
     // add event listener on transition end
     this.slideFrame.addEventListener('transitionend', this.handleTransitionEnd);
   }
 
   handleTransitionEnd() {
+    this.isMoving = false;
     // update the transform-styling of the slideFrame
     let newTranslate;
     if (this.currentIndex === 0) {
