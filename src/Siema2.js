@@ -13,11 +13,19 @@ class Siema extends React.Component {
     this.containerWidth = null;
     this.visibleChildren = null;
     this.isMoving = false;
+    this.isDragging = false;
+    this.drag = { start: null, end: null };
 
     this.handlePrev = this.handlePrev.bind(this);
     this.handleNext = this.handleNext.bind(this);
     this.handleTransitionEnd = this.handleTransitionEnd.bind(this);
     this.updateVisibleChildren = this.updateVisibleChildren.bind(this);
+    this.moveToCurrentSlide = this.moveToCurrentSlide.bind(this);
+
+    // Handle drag events
+    this.handleDragStart = this.handleDragStart.bind(this);
+    this.handleDragMove = this.handleDragMove.bind(this);
+    this.handleDragEnd = this.handleDragEnd.bind(this);
   }
 
   componentDidMount() {
@@ -109,12 +117,77 @@ class Siema extends React.Component {
     this.forceUpdate();
   }
 
+  handleDragStart(e) {
+    e.preventDefault();
+    console.log('start');
+    this.isDragging = true;
+    this.drag.start = e.pageX;
+  }
+
+  handleDragMove(e) {
+    e.preventDefault();
+    if (!this.isDragging) return;
+
+    console.log('moving');
+    // update the mouse position
+    this.drag.end = e.pageX;
+    // update the styling of this.slider
+    let newTranslate;
+    if (this.currentIndex === 0) {
+      newTranslate = this.drag.start - this.drag.end;
+    } else {
+      newTranslate = this.containerWidth + (this.drag.start - this.drag.end);
+    }
+    this.slideFrame.style.transform = `translateX(-${newTranslate}px)`;
+  }
+
+  handleDragEnd(e) {
+    console.log('end');
+    e.preventDefault();
+    if (!this.isDragging) return;
+
+    const movement = this.drag.end - this.drag.start;
+    if (movement > 0 && Math.abs(movement) > 100) {
+      this.handlePrev();
+    } else if (movement < 0 && Math.abs(movement) > 100) {
+      this.handleNext();
+    }
+    this.moveToCurrentSlide();
+    this.isDragging = false;
+    this.drag = { start: null, end: null };
+  }
+
+  moveToCurrentSlide() {
+    let newTranslate;
+    if (this.currentIndex === 0) {
+      newTranslate = 0;
+    } else if (this.currentIndex === 1) {
+      newTranslate = this.containerWidth;
+    } else {
+      newTranslate = this.containerWidth * 2;
+    }
+    this.slideFrame.style.transform = `translateX(-${newTranslate}px)`;
+
+    // add transition to styling of slideFrame
+    this.slideFrame.style.transition = 'all 200ms ease-in-out';
+    // add event listener on transition end
+    this.slideFrame.addEventListener('transitionend', this.handleTransitionEnd);
+  }
+
   render() {
+    const eventHandlers = {
+      onMouseDown: this.handleDragStart,
+      onMouseMove: this.handleDragMove,
+      onMouseUp: this.handleDragEnd,
+      onMouseLeave: this.handleDragEnd,
+    };
+
     return (
       <div>
         <div
           ref={(container) => this.container = container}
           style={{ overflow: 'hidden' }}
+          {...eventHandlers}
         >
           <div ref={(slideFrame) => this.slideFrame = slideFrame}>
             {this.visibleChildren}
