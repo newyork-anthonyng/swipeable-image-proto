@@ -19,6 +19,8 @@ class Siema extends React.Component {
     this.selectorWidth = this.container.getBoundingClientRect().width;
     this.styleChildren();
     this.slider.style.width = `${this.selectorWidth * this.innerElements.length}px`;
+
+    this.innerChildren = this.renderChildren();
   }
 
   styleChildren() {
@@ -66,6 +68,7 @@ class Siema extends React.Component {
 
     this.slider.removeEventListener('transitionend', this.removeTransition);
     this.slider.style.transition = 'none';
+    this.forceUpdate();
   }
 
   renderChildren() {
@@ -108,7 +111,7 @@ class Siema extends React.Component {
         <div
         ref={(slider) => this.slider = slider}
         >
-          {this.renderChildren()}
+          {this.innerChildren}
         </div>
         <div>
           <button onClick={this.handlePreviousClick}>Previous</button>
