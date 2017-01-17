@@ -161,10 +161,6 @@ class Siema extends React.Component {
     let newTranslate;
     if (this.currentIndex === 0) {
       newTranslate = 0;
-    } else if (this.currentIndex === 1) {
-      newTranslate = this.containerWidth;
-    } else {
-      newTranslate = this.containerWidth * 2;
     }
     this.slideFrame.style.transform = `translateX(-${newTranslate}px)`;
 
